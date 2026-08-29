@@ -1,0 +1,3 @@
+CREATE SCHEMA IF NOT EXISTS employee_management;
+CREATE SCHEMA IF NOT EXISTS finance;
+CREATE SCHEMA IF NOT EXISTS document_management;

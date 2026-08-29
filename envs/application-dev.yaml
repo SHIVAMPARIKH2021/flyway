@@ -1,0 +1,5 @@
+database:
+  host: dev-yet-to-be-decided.internal.net
+  port: 5432
+  name: emfs
+  sslmode: prefer
