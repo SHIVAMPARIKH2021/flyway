@@ -1,3 +1,11 @@
+# Run below commands to start and stop postgresql engine on local.
+```Bash
+brew services start postgresql@17
+brew services stop postgresql@17
+```
+
+# Create database and role
+
 # Check database exists or not
 ```Bash
 psql -U postgres -tc "SELECT 1 FROM pg_database WHERE datname = 'database_name'" | grep -q 1
