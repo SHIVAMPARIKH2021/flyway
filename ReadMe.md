@@ -31,18 +31,18 @@ CREATE DATABASE emfs
 
 ## Step A: Verify connection and loaded credentials
 ```Bash
-./gradlew dbStatus -Penv=local
+./gradlew dbStatus -Pdb={database_nmae} -Penv=local
 ```
 (Check that Database User: emfs_admin is printed from your ```bash~/.gradle/gradle.properties```)
 
 ## Step B: Check current migration status (Dry-run / Info)
 ```Bash
-./gradlew flywayInfo -Penv=local
+./gradlew flywayInfo -Pdb={database_name} -Penv=local
 ```
 
 ## Step C: Execute all pending migrations
 ```Bash
-./gradlew flywayMigrate -Penv=local
+./gradlew flywayMigrate -Pdb={database_name} -Penv=local
 ```
 
 ## Step D: Validate applied scripts against database state

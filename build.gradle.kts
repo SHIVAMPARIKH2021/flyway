@@ -14,11 +14,12 @@ plugins {
     id("org.flywaydb.flyway") version "10.15.0"
 }
 
-// 1. Resolve Target Environment (Default: local)
+// 1. Environment & Target Database Selection
 val targetEnv = project.findProperty("env")?.toString() ?: System.getenv("APP_ENV") ?: "local"
+val targetDb = project.findProperty("db")?.toString() ?: "emfs" // e.g. -Pdb=funds or -Pdb=emfs
+
 val yamlConfigFile = file("envs/application-$targetEnv.yml")
 
-// 2. Simple reader for non-sensitive YAML infrastructure config
 fun parseSimpleYaml(file: File): Map<String, String> {
     if (!file.exists()) return emptyMap()
     val map = mutableMapOf<String, String>()
@@ -43,30 +44,24 @@ fun parseSimpleYaml(file: File): Map<String, String> {
 
 val yamlConfig = parseSimpleYaml(yamlConfigFile)
 
-// 3. Native Gradle Property Resolution:
-// - Direct project property: -Pemfs.local.user=... or from ~/.gradle/gradle.properties
-// - Environment variable: FLYWAY_USER
-// - Fallback: YAML / defaults
-val dbUser = (project.findProperty("emfs.$targetEnv.user") as? String)
-    ?: (project.findProperty("emfsDbUser") as? String)
+// 2. Resolve Credentials for the Chosen Database
+// Looks up: funds.local.user or emfs.local.user
+val dbUser = (project.findProperty("$targetDb.$targetEnv.user") as? String)
     ?: System.getenv("FLYWAY_USER")
     ?: "postgres"
 
-val dbPassword = (project.findProperty("emfs.$targetEnv.password") as? String)
-    ?: (project.findProperty("emfsDbPassword") as? String)
+val dbPassword = (project.findProperty("$targetDb.$targetEnv.password") as? String)
     ?: System.getenv("FLYWAY_PASSWORD")
     ?: "postgres"
 
 val dbHost = yamlConfig["database.host"] ?: "localhost"
 val dbPort = yamlConfig["database.port"] ?: "5432"
-val dbName = yamlConfig["database.name"] ?: "emfs"
+val dbName = yamlConfig["database.$targetDb.name"] ?: targetDb
 val dbSslMode = yamlConfig["database.sslmode"] ?: "prefer"
 
-val finalJdbcUrl = System.getenv("FLYWAY_URL")
-    ?: (project.findProperty("emfs.$targetEnv.url") as? String)
-    ?: "jdbc:postgresql://$dbHost:$dbPort/$dbName?sslmode=$dbSslMode"
+val finalJdbcUrl = "jdbc:postgresql://$dbHost:$dbPort/$dbName?sslmode=$dbSslMode"
 
-// 4. Flyway Configuration
+// 3. Configure Flyway
 flyway {
     url = finalJdbcUrl
     user = dbUser
@@ -76,12 +71,13 @@ flyway {
     schemas = arrayOf("public")
     createSchemas = false
 
-    locations = arrayOf("filesystem:src/main/resources/db/migration")
+    // Dynamically point to src/main/resources/db/migration/funds or .../emfs
+    locations = arrayOf("filesystem:src/main/resources/db/migration/$targetDb")
     encoding = "UTF-8"
 
     baselineOnMigrate = true
     baselineVersion = "0.0.0"
-    baselineDescription = "Base EMFS Public Baseline"
+    baselineDescription = "Base $targetDb Baseline"
 
     cleanDisabled = (targetEnv != "local")
     outOfOrder = false
@@ -91,11 +87,11 @@ flyway {
 tasks.register("dbStatus") {
     doLast {
         println("----------------------------------------------")
-        println("Project Name         : ${project.name}")
-        println("Target Environment   : $targetEnv (envs/application-$targetEnv.yml)")
+        println("Target DB            : $targetDb")
+        println("Target Environment   : $targetEnv")
         println("Database JDBC URL    : $finalJdbcUrl")
         println("Database User        : $dbUser")
-        println("Clean Task Disabled  : ${flyway.cleanDisabled}")
+        println("Migration Path       : src/main/resources/db/migration/$targetDb")
         println("----------------------------------------------")
     }
 }
