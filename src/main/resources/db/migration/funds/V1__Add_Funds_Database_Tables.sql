@@ -2,7 +2,7 @@ CREATE SCHEMA IF NOT EXISTS sec_financials;
 SET search_path TO sec_financials;
 
 -- 1. Submissions (sub.tsv)
-CREATE TABLE sec_financials.submissions (
+CREATE TABLE IF NOT EXISTS sec_financials.submissions (
     adsh       CHAR(20) NOT NULL,
     cik        INTEGER NOT NULL,
     name       VARCHAR(150) NOT NULL,
@@ -43,7 +43,7 @@ CREATE TABLE sec_financials.submissions (
 );
 
 -- 2. Taxonomy Tags (tag.tsv)
-CREATE TABLE sec_financials.taxonomy_tags (
+CREATE TABLE IF NOT EXISTS sec_financials.taxonomy_tags (
     tag        VARCHAR(256) NOT NULL,
     version    VARCHAR(20) NOT NULL,
     custom     BOOLEAN NOT NULL,
@@ -57,7 +57,7 @@ CREATE TABLE sec_financials.taxonomy_tags (
 );
 
 -- 3. Numeric Facts (num.tsv)
-CREATE TABLE sec_financials.numeric_facts (
+CREATE TABLE IF NOT EXISTS sec_financials.numeric_facts (
     adsh       CHAR(20) NOT NULL,
     tag        VARCHAR(256) NOT NULL,
     version    VARCHAR(20) NOT NULL,
@@ -79,7 +79,7 @@ CREATE TABLE sec_financials.numeric_facts (
 );
 
 -- 4. Text Disclosures (txt.tsv)
-CREATE TABLE sec_financials.text_disclosures (
+CREATE TABLE IF NOT EXISTS sec_financials.text_disclosures (
     adsh       CHAR(20) NOT NULL,
     tag        VARCHAR(256) NOT NULL,
     version    VARCHAR(20) NOT NULL,
@@ -101,7 +101,7 @@ CREATE TABLE sec_financials.text_disclosures (
 );
 
 -- 5. Presentation Labels (lab.tsv)
-CREATE TABLE sec_financials.presentation_labels (
+CREATE TABLE IF NOT EXISTS sec_financials.presentation_labels (
     adsh       CHAR(20) NOT NULL,
     tag        VARCHAR(256) NOT NULL,
     version    VARCHAR(20) NOT NULL,
@@ -113,7 +113,7 @@ CREATE TABLE sec_financials.presentation_labels (
 );
 
 -- 6. Calculation Relationships (cal.tsv)
-CREATE TABLE sec_financials.calculation_relationships (
+CREATE TABLE IF NOT EXISTS sec_financials.calculation_relationships (
     adsh       CHAR(20) NOT NULL,
     arc        VARCHAR(100) NOT NULL,
     version    VARCHAR(20) NOT NULL,

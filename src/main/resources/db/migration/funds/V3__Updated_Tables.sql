@@ -15,26 +15,39 @@ ALTER TABLE sec_financials.submissions
     ADD COLUMN IF NOT EXISTS pdate DATE,
     ADD COLUMN IF NOT EXISTS effdate DATE;
 
--- Expand instance column to handle longer XML filenames safely
+-- Expand variable-length columns to TEXT
 ALTER TABLE sec_financials.submissions
-    ALTER COLUMN instance TYPE VARCHAR(64);
+    ALTER COLUMN name TYPE TEXT,
+    ALTER COLUMN cityba TYPE TEXT,
+    ALTER COLUMN zipba TYPE TEXT,
+    ALTER COLUMN bas1 TYPE TEXT,
+    ALTER COLUMN bas2 TYPE TEXT,
+    ALTER COLUMN baph TYPE TEXT,
+    ALTER COLUMN cityma TYPE TEXT,
+    ALTER COLUMN zipma TYPE TEXT,
+    ALTER COLUMN mas1 TYPE TEXT,
+    ALTER COLUMN mas2 TYPE TEXT,
+    ALTER COLUMN former TYPE TEXT,
+    ALTER COLUMN form TYPE TEXT,
+    ALTER COLUMN instance TYPE TEXT,
+    ALTER COLUMN aciks TYPE TEXT;
 
 
 -- ============================================================================
--- 2. Alter taxonomy_tags (Adjust column widths and drop obsolete fields)
+-- 2. Alter taxonomy_tags (Unbound types and drop obsolete fields)
 -- ============================================================================
 ALTER TABLE sec_financials.taxonomy_tags
     DROP COLUMN IF EXISTS crdr;
 
 ALTER TABLE sec_financials.taxonomy_tags
-    ALTER COLUMN version TYPE VARCHAR(40),
-    ALTER COLUMN datatype TYPE VARCHAR(40);
+    ALTER COLUMN tag TYPE TEXT,
+    ALTER COLUMN version TYPE TEXT,
+    ALTER COLUMN datatype TYPE TEXT;
 
 
 -- ============================================================================
--- 3. Alter numeric_facts (Replace corporate period fields with fund dimensions)
+-- 3. Alter numeric_facts (Unbound dimensions and tags)
 -- ============================================================================
--- Drop corporate period and dimension columns
 ALTER TABLE sec_financials.numeric_facts
     DROP COLUMN IF EXISTS qtrs,
     DROP COLUMN IF EXISTS dimh,
@@ -42,26 +55,26 @@ ALTER TABLE sec_financials.numeric_facts
     DROP COLUMN IF EXISTS durp,
     DROP COLUMN IF EXISTS datp;
 
--- Add Risk/Return specific dimensions (series, class, measure, etc.)
+-- Add dimensions as unbounded TEXT
 ALTER TABLE sec_financials.numeric_facts
-    ADD COLUMN IF NOT EXISTS series VARCHAR(40),
-    ADD COLUMN IF NOT EXISTS class VARCHAR(40),
-    ADD COLUMN IF NOT EXISTS measure VARCHAR(128),
-    ADD COLUMN IF NOT EXISTS document VARCHAR(128),
+    ADD COLUMN IF NOT EXISTS series TEXT,
+    ADD COLUMN IF NOT EXISTS class TEXT,
+    ADD COLUMN IF NOT EXISTS measure TEXT,
+    ADD COLUMN IF NOT EXISTS document TEXT,
     ADD COLUMN IF NOT EXISTS otherdims TEXT;
 
--- Adjust column lengths for fund taxonomy versions and UOMs
+-- Convert existing columns to TEXT to prevent truncation
 ALTER TABLE sec_financials.numeric_facts
-    ALTER COLUMN version TYPE VARCHAR(40),
-    ALTER COLUMN uom TYPE VARCHAR(40);
+    ALTER COLUMN tag TYPE TEXT,
+    ALTER COLUMN version TYPE TEXT,
+    ALTER COLUMN uom TYPE TEXT;
 
--- If a primary key constraint exists from the corporate schema, drop and recreate it
 ALTER TABLE sec_financials.numeric_facts
     DROP CONSTRAINT IF EXISTS pk_numeric_facts;
 
 
 -- ============================================================================
--- 4. Alter text_disclosures (Add fund dimensions and text-specific metrics)
+-- 4. Alter text_disclosures (Unbound all text & context columns)
 -- ============================================================================
 ALTER TABLE sec_financials.text_disclosures
     DROP COLUMN IF EXISTS qtrs,
@@ -70,19 +83,21 @@ ALTER TABLE sec_financials.text_disclosures
     DROP COLUMN IF EXISTS datp;
 
 ALTER TABLE sec_financials.text_disclosures
-    ADD COLUMN IF NOT EXISTS series VARCHAR(40),
-    ADD COLUMN IF NOT EXISTS class VARCHAR(40),
-    ADD COLUMN IF NOT EXISTS measure VARCHAR(128),
-    ADD COLUMN IF NOT EXISTS document VARCHAR(128),
+    ADD COLUMN IF NOT EXISTS series TEXT,
+    ADD COLUMN IF NOT EXISTS class TEXT,
+    ADD COLUMN IF NOT EXISTS measure TEXT,
+    ADD COLUMN IF NOT EXISTS document TEXT,
     ADD COLUMN IF NOT EXISTS otherdims TEXT,
     ADD COLUMN IF NOT EXISTS escaped BOOLEAN DEFAULT FALSE,
     ADD COLUMN IF NOT EXISTS srclen INTEGER DEFAULT 0,
     ADD COLUMN IF NOT EXISTS txtlen INTEGER DEFAULT 0;
 
+-- Convert version, lang, and context to TEXT (resolves line 82 error)
 ALTER TABLE sec_financials.text_disclosures
-    ALTER COLUMN version TYPE VARCHAR(40),
-    ALTER COLUMN lang TYPE VARCHAR(16),
-    ALTER COLUMN context TYPE VARCHAR(128);
+    ALTER COLUMN tag TYPE TEXT,
+    ALTER COLUMN version TYPE TEXT,
+    ALTER COLUMN lang TYPE TEXT,
+    ALTER COLUMN context TYPE TEXT;
 
 ALTER TABLE sec_financials.text_disclosures
     DROP CONSTRAINT IF EXISTS pk_text_disclosures;
@@ -102,17 +117,18 @@ ALTER TABLE sec_financials.presentation_labels
     ADD COLUMN IF NOT EXISTS "verbose" TEXT,
     ADD COLUMN IF NOT EXISTS total TEXT,
     ADD COLUMN IF NOT EXISTS negated TEXT,
-    ADD COLUMN IF NOT EXISTS negated TEXT,
     ADD COLUMN IF NOT EXISTS negatedterse TEXT;
 
 ALTER TABLE sec_financials.presentation_labels
-    ALTER COLUMN version TYPE VARCHAR(40);
+    ALTER COLUMN tag TYPE TEXT,
+    ALTER COLUMN version TYPE TEXT;
 
 
 -- ============================================================================
 -- 6. Alter calculation_relationships (Match cal.tsv layout)
 -- ============================================================================
 ALTER TABLE sec_financials.calculation_relationships
+    DROP COLUMN IF EXISTS version,
     DROP COLUMN IF EXISTS fromtag,
     DROP COLUMN IF EXISTS totag,
     DROP COLUMN IF EXISTS weight,
@@ -121,12 +137,11 @@ ALTER TABLE sec_financials.calculation_relationships
 ALTER TABLE sec_financials.calculation_relationships
     ADD COLUMN IF NOT EXISTS grp INTEGER NOT NULL DEFAULT 1,
     ADD COLUMN IF NOT EXISTS negative SMALLINT DEFAULT 0,
-    ADD COLUMN IF NOT EXISTS ptag VARCHAR(256) NOT NULL DEFAULT '',
-    ADD COLUMN IF NOT EXISTS pversion VARCHAR(40) NOT NULL DEFAULT '',
-    ADD COLUMN IF NOT EXISTS ctag VARCHAR(256) NOT NULL DEFAULT '',
-    ADD COLUMN IF NOT EXISTS cversion VARCHAR(40) NOT NULL DEFAULT '';
+    ADD COLUMN IF NOT EXISTS ptag TEXT NOT NULL DEFAULT '',
+    ADD COLUMN IF NOT EXISTS pversion TEXT NOT NULL DEFAULT '',
+    ADD COLUMN IF NOT EXISTS ctag TEXT NOT NULL DEFAULT '',
+    ADD COLUMN IF NOT EXISTS cversion TEXT NOT NULL DEFAULT '';
 
--- Remove the temporary column defaults once created
 ALTER TABLE sec_financials.calculation_relationships
     ALTER COLUMN grp DROP DEFAULT,
     ALTER COLUMN ptag DROP DEFAULT,
