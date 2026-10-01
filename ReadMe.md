@@ -21,10 +21,14 @@ CREATE DATABASE emfs
 ```
 
 # Check loaded configuration
+```bash
 ./gradlew dbStatus -Penv=local
+```
 
 # Check migration status
+```bash
 ./gradlew flywayInfo -Penv=local
+```
 
 # Commands to Run Flyway on Local
 - Open your terminal in the project root folder:
