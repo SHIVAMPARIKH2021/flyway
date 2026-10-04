@@ -53,6 +53,21 @@ CREATE DATABASE emfs
 ```Bash
 ./gradlew flywayValidate -Penv=local
 ```
+
+## For Environment
+
+### Repair Command
+```bash
+./gradlew flywayRepair -Djava.net.preferIPv4Stack=true -Penv={environment} -Pdb={database} '-P{database}.prod.user={username}' '-P{database}.prod.password={password}'
+```
+
+### Execution Command
+```bash
+
+./gradlew flywayRepair -Djava.net.preferIPv4Stack=true -Penv={environment} -Pdb={database} '-P{database}.prod.user={username}' '-P{database}.prod.password={password}'
+```
+
+
 # ER Diagram
 
 ```mermaid

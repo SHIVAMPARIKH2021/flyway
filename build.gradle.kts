@@ -18,7 +18,7 @@ plugins {
 val targetEnv = project.findProperty("env")?.toString() ?: System.getenv("APP_ENV") ?: "local"
 val targetDb = project.findProperty("db")?.toString() ?: "emfs" // e.g. -Pdb=funds or -Pdb=emfs
 
-val yamlConfigFile = file("envs/application-$targetEnv.yml")
+val yamlConfigFile = file("envs/application-$targetEnv.yaml")
 
 fun parseSimpleYaml(file: File): Map<String, String> {
     if (!file.exists()) return emptyMap()
