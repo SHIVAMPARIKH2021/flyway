@@ -17,6 +17,13 @@ ALTER TABLE sec_financials.submissions
 CREATE INDEX IF NOT EXISTS idx_submissions_quarter_id
     ON sec_financials.submissions(quarter_id);
 
-ALTER TABLE sec_financials.taxonomy_tags
-    ADD COLUMN IF NOT EXISTS quarter_id INTEGER
-    REFERENCES sec_financials.quarter_config(id) ON DELETE CASCADE;
+-- 3. Taxonomy Tags: Keep taxonomy_tags purely as the global concept catalog
+-- Do NOT put loose quarter/year on the primary entity.
+-- Instead, track quarterly provenance via an association bridge table:
+CREATE TABLE IF NOT EXISTS sec_financials.quarter_taxonomy_tags (
+    quarter_id INTEGER NOT NULL REFERENCES sec_financials.quarter_config(id) ON DELETE CASCADE,
+    tag        TEXT NOT NULL,
+    version    TEXT NOT NULL,
+    PRIMARY KEY (quarter_id, tag, version),
+    FOREIGN KEY (tag, version) REFERENCES sec_financials.taxonomy_tags(tag, version) ON DELETE CASCADE
+);
