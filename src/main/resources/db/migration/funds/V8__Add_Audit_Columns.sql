@@ -1,26 +1,44 @@
-alter table analytics.fund_reporting
-add column created_by varchar(20),
-add column updated_at timestamp;
+ALTER TABLE analytics.fund_reporting
+    ADD COLUMN IF NOT EXISTS created_by VARCHAR(20),
+    ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP;
 
-alter table analytics.holding
-add column updated_at timestamp,
-add column created_by varchar(20),
-add column created_at timestamp;
+ALTER TABLE analytics.holding
+    ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP,
+    ADD COLUMN IF NOT EXISTS created_by VARCHAR(20),
+    ADD COLUMN IF NOT EXISTS created_at TIMESTAMP;
 
-alter table analytics.fund_master
-add column created_by varchar(20);
+ALTER TABLE analytics.fund_master
+    ADD COLUMN IF NOT EXISTS created_by VARCHAR(20);
 
-alter table analytics.fund_classes
-add column updated_by varchar(20),
-add column created_by varchar(20),
-add column updated_at timestamp;
+ALTER TABLE analytics.fund_classes
+    ADD COLUMN IF NOT EXISTS updated_by VARCHAR(20),
+    ADD COLUMN IF NOT EXISTS created_by VARCHAR(20),
+    ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP;
 
-alter table analytics.compliance_rules
-rename column created_date to created_at;
-alter table analytics.compliance_rules
-rename column modified_date to updated_at;
+DO $$
+BEGIN
+    IF EXISTS (
+        SELECT 1 
+        FROM information_schema.columns 
+        WHERE table_schema = 'analytics' 
+          AND table_name = 'compliance_rules' 
+          AND column_name = 'created_date'
+    ) THEN
+        ALTER TABLE analytics.compliance_rules RENAME COLUMN created_date TO created_at;
+    END IF;
 
-alter table analytics.benchmark_master
-add column created_by varchar(20),
-add column created_at timestamp,
-add column updated_at timestamp;
+    IF EXISTS (
+        SELECT 1 
+        FROM information_schema.columns 
+        WHERE table_schema = 'analytics' 
+          AND table_name = 'compliance_rules' 
+          AND column_name = 'modified_date'
+    ) THEN
+        ALTER TABLE analytics.compliance_rules RENAME COLUMN modified_date TO updated_at;
+    END IF;
+END $$;
+
+ALTER TABLE analytics.benchmark_master
+    ADD COLUMN IF NOT EXISTS created_by VARCHAR(20),
+    ADD COLUMN IF NOT EXISTS created_at TIMESTAMP,
+    ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP;

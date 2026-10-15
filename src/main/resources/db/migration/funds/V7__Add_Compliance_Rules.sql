@@ -7,8 +7,8 @@ INSERT INTO analytics.compliance_rules (
     is_active,
     created_by,
     modified_by,
-    created_date,
-    modified_date
+    created_at,
+    updated_at
 ) VALUES
 -- ============================================================================
 -- PRIORITY 1: EXCLUSIONS & NEGATIONS (Overrides false positives)

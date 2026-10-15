@@ -1,7 +1,7 @@
 database:
-  host: db-server.internal
+  host: 192.168.1.9
   port: 5432
-  sslmode: prefer
+  sslmode: disable
   emfs:
     name: emfs
   funds:

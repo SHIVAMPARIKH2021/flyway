@@ -16,26 +16,34 @@ plugins {
 
 // 1. Environment & Target Database Selection
 val targetEnv = project.findProperty("env")?.toString() ?: System.getenv("APP_ENV") ?: "local"
-val targetDb = project.findProperty("db")?.toString() ?: "emfs" // e.g. -Pdb=funds or -Pdb=emfs
+val targetDb = project.findProperty("db")?.toString() ?: "funds"
 
 val yamlConfigFile = file("envs/application-$targetEnv.yaml")
 
 fun parseSimpleYaml(file: File): Map<String, String> {
     if (!file.exists()) return emptyMap()
     val map = mutableMapOf<String, String>()
-    var currentSection = ""
+    val sectionStack = mutableListOf<Pair<Int, String>>()
 
-    file.readLines().forEach { line ->
-        val trimmed = line.trim()
+    file.readLines().forEach { rawLine ->
+        val trimmed = rawLine.trim()
         if (trimmed.isEmpty() || trimmed.startsWith("#")) return@forEach
 
-        if (!line.startsWith(" ") && !line.startsWith("\t") && trimmed.endsWith(":")) {
-            currentSection = trimmed.removeSuffix(":")
+        val indent = rawLine.indexOfFirst { !it.isWhitespace() }
+
+        while (sectionStack.isNotEmpty() && sectionStack.last().first >= indent) {
+            sectionStack.removeAt(sectionStack.size - 1)
+        }
+
+        if (trimmed.endsWith(":")) {
+            val sectionName = trimmed.removeSuffix(":")
+            sectionStack.add(indent to sectionName)
         } else if (trimmed.contains(":")) {
             val parts = trimmed.split(":", limit = 2)
             val key = parts[0].trim()
             val value = parts[1].trim().trim('"', '\'')
-            val fullKey = if (currentSection.isNotEmpty()) "$currentSection.$key" else key
+            val prefix = sectionStack.joinToString(".") { it.second }
+            val fullKey = if (prefix.isNotEmpty()) "$prefix.$key" else key
             map[fullKey] = value
         }
     }
@@ -45,19 +53,22 @@ fun parseSimpleYaml(file: File): Map<String, String> {
 val yamlConfig = parseSimpleYaml(yamlConfigFile)
 
 // 2. Resolve Credentials for the Chosen Database
-// Looks up: funds.local.user or emfs.local.user
 val dbUser = (project.findProperty("$targetDb.$targetEnv.user") as? String)
+    ?: (project.findProperty("funds.prod.user") as? String)
     ?: System.getenv("FLYWAY_USER")
-    ?: "postgres"
+    ?: "funds_admin"
 
 val dbPassword = (project.findProperty("$targetDb.$targetEnv.password") as? String)
+    ?: (project.findProperty("funds.prod.password") as? String)
     ?: System.getenv("FLYWAY_PASSWORD")
-    ?: "postgres"
+    ?: "strong/?12x3401"
 
-val dbHost = yamlConfig["database.host"] ?: "localhost"
+val dbHost = yamlConfig["database.host"] ?: "192.168.1.9"
 val dbPort = yamlConfig["database.port"] ?: "5432"
 val dbName = yamlConfig["database.$targetDb.name"] ?: targetDb
-val dbSslMode = yamlConfig["database.sslmode"] ?: "prefer"
+val dbSslMode = yamlConfig["database.sslmode"] ?: "disable"
+
+val targetSchema = if (targetDb == "funds") "sec_financials" else "public"
 
 val finalJdbcUrl = "jdbc:postgresql://$dbHost:$dbPort/$dbName?sslmode=$dbSslMode"
 
@@ -67,11 +78,10 @@ flyway {
     user = dbUser
     password = dbPassword
 
-    defaultSchema = "public"
-    schemas = arrayOf("public")
-    createSchemas = false
+    defaultSchema = targetSchema
+    schemas = arrayOf(targetSchema)
+    createSchemas = true
 
-    // Dynamically point to src/main/resources/db/migration/funds or .../emfs
     locations = arrayOf("filesystem:src/main/resources/db/migration/$targetDb")
     encoding = "UTF-8"
 
@@ -91,6 +101,7 @@ tasks.register("dbStatus") {
         println("Target Environment   : $targetEnv")
         println("Database JDBC URL    : $finalJdbcUrl")
         println("Database User        : $dbUser")
+        println("Target Schema        : $targetSchema")
         println("Migration Path       : src/main/resources/db/migration/$targetDb")
         println("----------------------------------------------")
     }

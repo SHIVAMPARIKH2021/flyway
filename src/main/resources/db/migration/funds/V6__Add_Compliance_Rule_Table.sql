@@ -1,4 +1,4 @@
-CREATE TABLE analytics.compliance_rules (
+CREATE TABLE IF NOT EXISTS analytics.compliance_rules (
     rule_id          SERIAL PRIMARY KEY,
     rule_name        VARCHAR(100) NOT NULL,
     pattern          TEXT NOT NULL,                    -- Regex pattern or exact keyword
