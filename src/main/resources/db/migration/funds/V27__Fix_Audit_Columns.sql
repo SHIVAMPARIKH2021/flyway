@@ -50,3 +50,6 @@ BEGIN
     RAISE NOTICE 'Completed audit column constraint and default removal for schema: analytics';
 END;
 $$;
+
+-- Execute the procedure immediately as part of the migration
+CALL analytics.drop_audit_constraints_and_defaults();
