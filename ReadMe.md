@@ -58,13 +58,13 @@ CREATE DATABASE emfs
 
 ### Repair Command
 ```bash
-./gradlew flywayRepair -Djava.net.preferIPv4Stack=true -Penv={environment} -Pdb={database} '-P{database}.prod.user={username}' '-P{database}.prod.password={password}'
+./gradlew flywayRepair -Djava.net.preferIPv4Stack=true -Penv={environment} -Pdb={database} '-P{database}.{environment}.user={username}' '-P{database}.{environment}.password={password}'
 ```
 
 ### Execution Command
 ```bash
 
-./gradlew flywayRepair -Djava.net.preferIPv4Stack=true -Penv={environment} -Pdb={database} '-P{database}.prod.user={username}' '-P{database}.prod.password={password}'
+./gradlew flywayMigrate -Djava.net.preferIPv4Stack=true -Penv={environment} -Pdb={database} '-P{database}.{environment}.user={username}' '-P{database}.{environment}.password={password}'
 ```
 
 
