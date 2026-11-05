@@ -66,4 +66,5 @@ VALUES
     ('FEE_AND_EXPENSE', 'CONTAINS', 'redemption fee', 'Redemption fee lines'),
     ('FEE_AND_EXPENSE', 'STARTS_WITH', 'sales charge', 'Sales charge table rows'),
     ('FEE_AND_EXPENSE', 'STARTS_WITH', 'deferred sales', 'Deferred sales load rows'),
-    ('FEE_AND_EXPENSE', 'STARTS_WITH', 'maximum sales charge', 'Maximum sales charge rows');
+    ('FEE_AND_EXPENSE', 'STARTS_WITH', 'maximum sales charge', 'Maximum sales charge rows'),
+    ('SHARE_CLASS', 'REGEX', '^(?:advisor|investor|institutional)\s+class$', 'Share class row labels');
